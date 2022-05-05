@@ -1,10 +1,10 @@
 const express = require('express');
-const app = express()
+const app = express();
 const port = 5000
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const config = require('./config/key')
-
+const config = require('./config/key');
+const {auth} = require('./middleware/auth');
 const { User } = require("./models/User");
 
 //bodyParser:클라이언트에서 가져온 정보를 서버에서 분석해서 가져올수있게 해줌
@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
   res.send('Hello World! 안녕하세요')
 })
 //postman으로 test하기 
-app.post('/register',(req,res)=>{
+app.post('/api/users/register',(req,res)=>{
     //회원가입 정보 > DB에 넣기
     const user = new User(req.body);
 
@@ -36,7 +36,7 @@ app.post('/register',(req,res)=>{
     })
 })
 //로그인
-app.post('/login',(req,res)=>{
+app.post('/api/users/login',(req,res)=>{
     //DB에서 이메일 찾기
     User.findOne({email:req.body.email},(err,user)=>{
         if(!user){
@@ -59,6 +59,30 @@ app.post('/login',(req,res)=>{
                 .json({loginSuccess:true,userId:user._id})  //성공시 출력
             })
         })
+    })
+})
+//권한
+app.get('/api/users/auth',auth,(req,res)=>{
+    res.status(200).json({
+        _id: req.user._id,
+        isAdmin : req.user.role === 0 ? false : true , 
+        isAuth : true, 
+        email: req.user.email,
+        name : req.user.name,
+        lastname:req.user.lastname,
+        role: req.user.role,
+        image: req.user.image
+    })
+})
+//로그아웃
+app.get('/api/users/logout', auth, (req, res)=>{
+    User.findOneAndUpdate({ _id : req.user._id},
+        {token : ""}
+        ,(err,user) => {
+            if(err) return res.json({success:false,err});
+            return res.status(200).send({
+                success: true
+            })
     })
 })
 
