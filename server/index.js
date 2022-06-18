@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express();
-const port = 5000
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const config = require('./config/key');
@@ -20,9 +19,17 @@ mongoose.connect(config.mongoURI,{
 }).then(()=> console.log('MongoDB Connected..'))
   .catch(err=>console.log(err))
 
+
 app.get('/', (req, res) => {
   res.send('Hello World! 안녕하세요')
 })
+
+//request 받는 router (client)
+app.get('/api/hello',(req,res)=>{
+    res.send('react수업 21강 입니다.')
+})
+
+
 //postman으로 test하기 
 app.post('/api/users/register',(req,res)=>{
     //회원가입 정보 > DB에 넣기
@@ -86,6 +93,8 @@ app.get('/api/users/logout', auth, (req, res)=>{
     })
 })
 
+
+const port = 5000
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
